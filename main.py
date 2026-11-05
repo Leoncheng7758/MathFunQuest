@@ -7,7 +7,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.image import Image
+from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.utils import get_color_from_hex
 from kivy.animation import Animation
@@ -60,20 +60,30 @@ class CountGame(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.score = 0
+        self._next_question = None
+        self._accepting_answers = True
         self.layout = BoxLayout(orientation='vertical', padding=40, spacing=20)
         
-        self.question = Label(text='数一数有多少个🍎？', font_size=60)
+        self.question = Label(text='数一数有多少个圆点？', font_size=40)
+        self.objects = Label(font_size=48)
         self.answer_layout = GridLayout(cols=3, spacing=20, size_hint_y=0.6)
         
         self.create_options()
         
         self.layout.add_widget(self.question)
+        self.layout.add_widget(self.objects)
         self.layout.add_widget(self.answer_layout)
+        back_btn = Button(text='返回主菜单', font_size=30, size_hint=(1, 0.2))
+        back_btn.bind(on_press=lambda button: setattr(self.manager, 'current', 'menu'))
+        self.layout.add_widget(back_btn)
         self.add_widget(self.layout)
     
     def create_options(self):
+        self._accepting_answers = True
+        self.question.text = '数一数有多少个圆点？'
         self.answer_layout.clear_widgets()
         correct = random.randint(3, 8)
+        self.objects.text = ' '.join(['●'] * correct)
         options = [correct]
         while len(options) < 3:
             wrong = random.randint(1, 10)
@@ -90,11 +100,26 @@ class CountGame(Screen):
             self.answer_layout.add_widget(btn)
     
     def correct_answer(self, instance):
+        if not self._accepting_answers:
+            return
+        self._accepting_answers = False
+        for button in self.answer_layout.children:
+            button.disabled = True
         self.score += 1
         Animation(opacity=0.3, duration=0.2).start(instance)
         instance.text = '✅'
         self.question.text = f'太棒了！当前 {self.score} 颗星 ✨'
-        Clock.schedule_once(lambda dt: self.create_options(), 1.5)
+        self._next_question = Clock.schedule_once(self._advance_question, 1.5)
+
+    def _advance_question(self, dt):
+        self._next_question = None
+        self.create_options()
+
+    def on_leave(self, *args):
+        if self._next_question is not None:
+            self._next_question.cancel()
+            self._next_question = None
+        self.create_options()
     
     def wrong_answer(self, instance):
         Animation(opacity=0.4, duration=0.1).start(instance)
@@ -134,5 +159,4 @@ class MathFunQuestApp(App):
 
 
 if __name__ == '__main__':
-    from kivy.clock import Clock  # 延迟导入
     MathFunQuestApp().run()
