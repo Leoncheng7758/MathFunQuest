@@ -20,6 +20,6 @@ Baseline: `7bc727a3a9421720b7874b6c62b33d33ce6093da` on `main`.
 
 ## Verification scope
 
-Six real-widget regression tests cover imported use, displayed quantities 3–8, distinct choices, single scoring/timer, question reset, timer cancellation, and return navigation. Tests patch animation and scheduler calls for determinism; they do not replace Kivy widgets. Compilation and lint apply to the Python prototype. Record local and remote execution evidence in the PR.
+Seven real-widget regression tests cover imported use, displayed quantities 3–8, distinct choices, single scoring/timer, wrong-answer behavior, question reset, timer cancellation, and return navigation. Scoring tests select the choice matching the displayed quantity and dispatch real button events with real animations. Only scheduler calls are patched for deterministic timer assertions. Compilation and lint apply to the Python prototype. Record local and remote execution evidence in the PR.
 
 Remaining: physical touch testing, font assets, responsive layouts, screen-reader behavior, mobile packaging, and implementation of the math/shape activities. No coverage percentage is claimed. No child-safety or learning-effectiveness certification is claimed. Advisory scans cover declared dependencies at scan time and do not prove absence of vulnerabilities.
